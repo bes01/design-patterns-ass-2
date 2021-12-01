@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from models import Sellable
+
 
 class Subject(ABC):
 
@@ -16,15 +18,15 @@ class Subject(ABC):
 class Observer(ABC):
 
     @abstractmethod
-    def update(self, subject: Subject) -> None:
+    def update(self) -> None:
         pass
 
 
 class Report(Observer):
     _served_customer_count: int = 0
-    _CUSTOMER_AMOUNT_FOR_REPORT: int = -1  # Child class should specify this field
+    _CUSTOMER_AMOUNT_FOR_REPORT: int  # Child class should specify this field
 
-    def update(self, subject: Subject) -> None:
+    def update(self) -> None:
         self._served_customer_count += 1
         if self._served_customer_count % self._CUSTOMER_AMOUNT_FOR_REPORT == 0:
             self.report_logic()
@@ -36,7 +38,8 @@ class Report(Observer):
 
 class XReport(Report):
 
-    def __init__(self):
+    def __init__(self, pos: "PointOfSales"):
+        self.pos = pos
         self._CUSTOMER_AMOUNT_FOR_REPORT = 20
 
     def report_logic(self) -> None:
@@ -45,7 +48,8 @@ class XReport(Report):
 
 class ZReport(Report):
 
-    def __init__(self):
+    def __init__(self, pos: "PointOfSales"):
+        self.pos = pos
         self._CUSTOMER_AMOUNT_FOR_REPORT = 100
 
     def report_logic(self) -> None:
@@ -54,6 +58,7 @@ class ZReport(Report):
 
 class PointOfSales(Subject):
     _observers: List[Observer] = []
+    _receipts: List[List[Sellable]] = []
 
     def attach(self, observer: Observer) -> None:
         self._observers.append(observer)

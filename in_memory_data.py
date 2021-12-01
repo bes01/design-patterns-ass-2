@@ -18,7 +18,7 @@ ITEMS = [
 
 DISCOUNTED_COMBOS = [
     {
-        "name": "Bread and cheese (20% SALE)",
+        "name": "Bread and cheese",
         "discount": 0.4,
         "items": [ITEMS[0], ITEMS[2]]
     }
