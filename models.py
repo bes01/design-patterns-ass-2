@@ -1,8 +1,8 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import List
 
 
-class Sellable:
+class Sellable(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
