@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from enum import Enum
 from typing import List
 
 
@@ -15,10 +16,11 @@ class Sellable(ABC):
 
 # Single Product
 class Item(Sellable):
+
     def __init__(self, *, name: str, price: float, discount: float):
-        self.name = name
-        self.price = price
-        self.discount = discount
+        self.name: str = name
+        self.price: float = price
+        self.discount: float = discount
 
     def get_name(self) -> str:
         return self.name
@@ -29,10 +31,11 @@ class Item(Sellable):
 
 # Pack or any combo with discount
 class ItemGroup(Sellable):
+
     def __init__(self, *, name: str, discount: float, items: List[Sellable]):
-        self.name = name
-        self.discount = discount
-        self.items = items
+        self.name: str = name
+        self.discount: float = discount
+        self.items: List[Sellable] = items
 
     def get_name(self) -> str:
         return self.name
@@ -44,41 +47,48 @@ class ItemGroup(Sellable):
 class QuantitativeSellable(Sellable):
 
     def __init__(self, sellable: Sellable):
-        self.sellable = sellable
-        self.quantity = 1
+        self._sellable: Sellable = sellable
+        self._quantity: int = 1
 
     def get_name(self) -> str:
-        return self.sellable.get_name()
+        return self._sellable.get_name()
 
     def get_price(self) -> float:
-        return self.sellable.get_price() * self.quantity
-
-    def get_single_item_price(self) -> float:
-        return self.sellable.get_price()
+        return self._sellable.get_price()
 
     def get_quantity(self) -> int:
-        return self.quantity
+        return self._quantity
 
     def increment_quantity(self):
-        self.quantity += 1
+        self._quantity += 1
+
+    def get_product(self) -> Sellable:
+        return self._sellable
 
 
 class Receipt:
-    _products: dict[str, QuantitativeSellable] = {}
 
-    def __init__(self):
-        print("\nOpening new receipt...")
+    def __init__(self, is_report: bool = False):
+        self.is_report = is_report
+        self._products: dict[str, QuantitativeSellable] = {}
+        if not self.is_report:
+            print("\nOpening receipt...")
 
-    def add_item(self, product: Sellable) -> None:
+    def add_product(self, product: Sellable) -> None:
         if product.get_name() in self._products:
             self._products[product.get_name()].increment_quantity()
         else:
             self._products[product.get_name()] = QuantitativeSellable(product)
 
-        print(f"Added: {product.get_name()}")
+        if not self.is_report:
+            print(f"Added: {product.get_name()}")
+
+    def get_products(self) -> List[QuantitativeSellable]:
+        return [self._products[key] for key in self._products.keys()]
 
     def close_receipt(self) -> None:
-        print("Closing receipt...")
+        if not self.is_report:
+            print("Closing receipt...")
         print("|--------------------|----------|----------|----------|")
         print("|        Name        |   Units  |   Price  |   Total  |")
         print("|--------------------|----------|----------|----------|")
@@ -86,8 +96,8 @@ class Receipt:
             product = self._products[product_name]
             name = self._fill_with_whitespaces(product.get_name(), 20)
             units = self._fill_with_whitespaces(str(product.get_quantity()), 10)
-            price = self._fill_with_whitespaces(str(product.get_single_item_price()), 10)
-            total = self._fill_with_whitespaces(str(product.get_price()), 10)
+            price = self._fill_with_whitespaces(str(product.get_price()), 10)
+            total = self._fill_with_whitespaces(str(product.get_price() * product.get_quantity()), 10)
             print(f'|{name}|{units}|{price}|{total}|')
             print("|--------------------|----------|----------|----------|")
 
@@ -100,3 +110,8 @@ class Receipt:
         elif len(result) < length:
             result += ' ' * (length - len(result))
         return result
+
+
+class PaymentMethod(Enum):
+    CASH = "cash"
+    CARD = "card"

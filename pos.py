@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from models import Sellable
+from models import Receipt, Sellable, PaymentMethod
 
 
 class Subject(ABC):
@@ -23,10 +23,14 @@ class Observer(ABC):
 
 
 class Report(Observer):
-    _served_customer_count: int = 0
-    _CUSTOMER_AMOUNT_FOR_REPORT: int  # Child class should specify this field
+
+    def __init__(self):
+        self._served_customer_count: int = 0
+        self._CUSTOMER_AMOUNT_FOR_REPORT: int = 0  # Child class should specify this field
 
     def update(self) -> None:
+        if self._CUSTOMER_AMOUNT_FOR_REPORT == 0:
+            raise RuntimeError('Child class should have specified CUSTOMER_AMOUNT_FOR_REPORT')
         self._served_customer_count += 1
         if self._served_customer_count % self._CUSTOMER_AMOUNT_FOR_REPORT == 0:
             self.report_logic()
@@ -39,29 +43,72 @@ class Report(Observer):
 class XReport(Report):
 
     def __init__(self, pos: "PointOfSales"):
-        self.pos = pos
-        self._CUSTOMER_AMOUNT_FOR_REPORT = 20
+        super().__init__()
+        self.pos: "PointOfSales" = pos
+        self._CUSTOMER_AMOUNT_FOR_REPORT: int = 20
 
     def report_logic(self) -> None:
-        print('X Report')
+        print('\n#######################################################')
+        print('Starting X Report...')
+        receipts = self.pos.get_receipts()
+        summary_receipt = Receipt(True)
+        for receipt in receipts:
+            for product in receipt.get_products():
+                for _ in range(product.get_quantity()):
+                    summary_receipt.add_product(product.get_product())
+        summary_receipt.close_receipt()
+        print('X Report ended successfully')
 
 
 class ZReport(Report):
 
     def __init__(self, pos: "PointOfSales"):
-        self.pos = pos
-        self._CUSTOMER_AMOUNT_FOR_REPORT = 100
+        super().__init__()
+        self.pos: "PointOfSales" = pos
+        self._CUSTOMER_AMOUNT_FOR_REPORT: int = 100
 
     def report_logic(self) -> None:
-        print('Z Report')
+        print('\n#######################################################')
+        print('Starting Z Report...')
+        print('Clearing cash registers...')
+        self.pos.end_shift()
+        print('Z Report ended successfully')
 
 
 class PointOfSales(Subject):
-    _observers: List[Observer] = []
-    _receipts: List[List[Sellable]] = []
+
+    def __init__(self, *, MAXIMUM_SHIFTS: int):
+        self._observers: List[Observer] = []
+        self._receipts: List[Receipt] = []
+        self._shift_count: int = 0
+        self.MAXIMUM_SHIFTS: int = MAXIMUM_SHIFTS
 
     def attach(self, observer: Observer) -> None:
         self._observers.append(observer)
 
     def notify(self) -> None:
-        map(lambda observer: observer.update(), self._observers)
+        for observer in self._observers:
+            observer.update()
+
+    def end_shift(self) -> None:
+        self._receipts.clear()
+        self._shift_count += 1
+
+    def get_receipts(self) -> List[Receipt]:
+        return self._receipts
+
+    def serve_customer(self, cart: List[Sellable], payment_method: PaymentMethod) -> bool:
+        if self._shift_count < self.MAXIMUM_SHIFTS:
+            print('\n*******************************************************')
+            print('Serving customer...')
+            print(f'Payment method: {payment_method.value}')
+            new_receipt = Receipt()
+            for product in cart:
+                new_receipt.add_product(product)
+            new_receipt.close_receipt()
+            self._receipts.append(new_receipt)
+            self.notify()
+            return True
+
+        print(f'\nMaximum shifts count exceeded - {self.MAXIMUM_SHIFTS}')
+        return False
