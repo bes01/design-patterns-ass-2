@@ -133,5 +133,4 @@ class PointOfSales(Subject):
             self.notify()
             return True
 
-        print(f"\nMaximum shifts count exceeded - {self.MAXIMUM_SHIFTS}")
         return False
