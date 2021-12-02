@@ -26,6 +26,7 @@ class Report(Observer):
         self._CUSTOMER_AMOUNT_FOR_REPORT: int = (
             0  # Child class should specify this field
         )
+        self._REPORT_NAME: str = ""  # Child class should specify this field
 
     def update(self) -> None:
         if self._CUSTOMER_AMOUNT_FOR_REPORT == 0:
@@ -33,12 +34,32 @@ class Report(Observer):
                 "Child class should have specified CUSTOMER_AMOUNT_FOR_REPORT"
             )
         self._served_customer_count += 1
-        if self._served_customer_count % self._CUSTOMER_AMOUNT_FOR_REPORT == 0:
+        if (
+            self._served_customer_count % self._CUSTOMER_AMOUNT_FOR_REPORT == 0
+            and self.manager_agreed()
+        ):
             self.report_logic()
 
     @abstractmethod
     def report_logic(self) -> None:
         pass
+
+    def manager_agreed(self) -> bool:
+        if self._REPORT_NAME == "":
+            raise RuntimeError("Child class should have specified REPORT_NAME")
+        print(
+            f"\nIt's time for some {self._REPORT_NAME}."
+            f"\nPlease enter 'y' if you (THE MANAGER) want this report, otherwise enter 'n': "
+        )
+        while True:
+            agreed = input()
+            if agreed == "y":
+                return True
+            elif agreed == "n":
+                return False
+            print(
+                "Please enter valid answer. Just 'y' or 'n'" "\nIt's not that hard.: "
+            )
 
 
 class XReport(Report):
@@ -46,6 +67,7 @@ class XReport(Report):
         super().__init__()
         self.pos: "PointOfSales" = pos
         self._CUSTOMER_AMOUNT_FOR_REPORT: int = 20
+        self._REPORT_NAME = "X Report"
 
     def report_logic(self) -> None:
         print("\n#######################################################")
@@ -65,6 +87,7 @@ class ZReport(Report):
         super().__init__()
         self.pos: "PointOfSales" = pos
         self._CUSTOMER_AMOUNT_FOR_REPORT: int = 100
+        self._REPORT_NAME = "Z Report"
 
     def report_logic(self) -> None:
         print("\n#######################################################")

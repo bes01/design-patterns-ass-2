@@ -7,7 +7,7 @@ from product_factory import ProductFactory
 
 
 class Simulation:
-    def __init__(self) -> None:
+    def __init__(self):
         self.product_factory = ProductFactory()
         self.pos = PointOfSales(MAXIMUM_SHIFTS=3)
         x_report = XReport(self.pos)
@@ -27,6 +27,3 @@ class Simulation:
         while not stop_simulation:
             customer = self._create_random_customer()
             stop_simulation = not self.pos.serve_customer(*customer)
-
-
-Simulation().start()

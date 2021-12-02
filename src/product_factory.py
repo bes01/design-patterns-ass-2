@@ -5,7 +5,7 @@ from models import Item, ItemGroup, Sellable
 
 
 class ProductFactory:
-    def __init__(self) -> None:
+    def __init__(self):
         self.items = in_memory_data.ITEMS
         self.discounted_combos = in_memory_data.DISCOUNTED_COMBOS
         self.items_by_batch = in_memory_data.ITEMS_BY_BATCH
