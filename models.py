@@ -1,10 +1,9 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
 
 class Sellable(ABC):
-
     @abstractmethod
     def get_name(self) -> str:
         pass
@@ -16,7 +15,6 @@ class Sellable(ABC):
 
 # Single Product
 class Item(Sellable):
-
     def __init__(self, *, name: str, price: float, discount: float):
         self.name: str = name
         self.price: float = price
@@ -31,7 +29,6 @@ class Item(Sellable):
 
 # Pack or any combo with discount
 class ItemGroup(Sellable):
-
     def __init__(self, *, name: str, discount: float, items: List[Sellable]):
         self.name: str = name
         self.discount: float = discount
@@ -45,7 +42,6 @@ class ItemGroup(Sellable):
 
 
 class QuantitativeSellable(Sellable):
-
     def __init__(self, sellable: Sellable):
         self._sellable: Sellable = sellable
         self._quantity: int = 1
@@ -59,7 +55,7 @@ class QuantitativeSellable(Sellable):
     def get_quantity(self) -> int:
         return self._quantity
 
-    def increment_quantity(self):
+    def increment_quantity(self) -> None:
         self._quantity += 1
 
     def get_product(self) -> Sellable:
@@ -67,7 +63,6 @@ class QuantitativeSellable(Sellable):
 
 
 class Receipt:
-
     def __init__(self, is_report: bool = False):
         self.is_report = is_report
         self._products: dict[str, QuantitativeSellable] = {}
@@ -97,18 +92,20 @@ class Receipt:
             name = self._fill_with_whitespaces(product.get_name(), 20)
             units = self._fill_with_whitespaces(str(product.get_quantity()), 10)
             price = self._fill_with_whitespaces(str(product.get_price()), 10)
-            total = self._fill_with_whitespaces(str(product.get_price() * product.get_quantity()), 10)
-            print(f'|{name}|{units}|{price}|{total}|')
+            total = self._fill_with_whitespaces(
+                str(product.get_price() * product.get_quantity()), 10
+            )
+            print(f"|{name}|{units}|{price}|{total}|")
             print("|--------------------|----------|----------|----------|")
 
     def _fill_with_whitespaces(self, word: str, length: int) -> str:
         fill_len = int((length - len(word)) / 2)
-        fill_str = fill_len * ' '
-        result = f'{fill_str}{word}{fill_str}'
+        fill_str = fill_len * " "
+        result = f"{fill_str}{word}{fill_str}"
         if len(result) > length:
             result = result[:length]
         elif len(result) < length:
-            result += ' ' * (length - len(result))
+            result += " " * (length - len(result))
         return result
 
 
